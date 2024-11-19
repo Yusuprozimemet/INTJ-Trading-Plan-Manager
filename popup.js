@@ -1,165 +1,146 @@
-// Advanced Logging and Data Management
-class TradingPlanManager {
-  constructor() {
-      this.initializeEventListeners();
-      this.loadSavedData();
-  }
+// Popup.js - Handles interactions in the extension popup
 
-  initializeEventListeners() {
-      // Goals Management
-      document.getElementById('saveGoals').addEventListener('click', () => this.saveStrategicGoals());
-      
-      // Strategy Evaluation
-      document.getElementById('saveStrategy').addEventListener('click', () => this.evaluateStrategyCompliance());
-      
-      // Risk Management
-      document.getElementById('saveRiskParameters').addEventListener('click', () => this.saveRiskParameters());
-      
-      // Learning Log
-      document.getElementById('saveLearning').addEventListener('click', () => this.saveLearningInsights());
-      
-      // Emotional Intelligence
-      document.getElementById('saveEmotion').addEventListener('click', () => this.logEmotionalInsights());
-  }
+document.addEventListener('DOMContentLoaded', function() {
+    const tradingPlanManager = {
+        init() {
+            this.cacheDOM();
+            this.bindEvents();
+            this.loadSavedData();
+        },
 
-  loadSavedData() {
-      // Load previously saved data from chrome storage
-      chrome.storage.local.get([
-          'monthlyGoal', 'annualGoal', 'sharpeRatio', 
-          'strategyAdherence', 'selectionCriteria',
-          'riskPerTrade', 'portfolioCorrelation', 'maxDrawdown',
-          'learningLog', 'emotionLog'
-      ], (result) => {
-          this.populateFields(result);
-      });
-  }
+        cacheDOM() {
+            // Goal Setting Elements
+            this.goalInput = document.getElementById('monthlyGoal');
+            this.annualGoalInput = document.getElementById('annualGoal');
+            this.sharpeRatioInput = document.getElementById('sharpeRatio');
+            this.saveGoalsBtn = document.getElementById('saveGoals');
 
-  populateFields(data) {
-      const fieldsToPopulate = [
-          'monthlyGoal', 'annualGoal', 'sharpeRatio', 
-          'strategyAdherence', 'selectionCriteria',
-          'riskPerTrade', 'portfolioCorrelation', 'maxDrawdown',
-          'learningLog', 'emotionLog'
-      ];
+            // Strategy Elements
+            this.strategyAdherenceSelect = document.getElementById('strategyAdherence');
+            this.selectionCriteriaSelect = document.getElementById('selectionCriteria');
+            this.saveStrategyBtn = document.getElementById('saveStrategy');
 
-      fieldsToPopulate.forEach(field => {
-          const element = document.getElementById(field);
-          if (element && data[field]) {
-              element.value = data[field];
-          }
-      });
-  }
+            // Risk Management Elements
+            this.riskPerTradeInput = document.getElementById('riskPerTrade');
+            this.portfolioCorrelationInput = document.getElementById('portfolioCorrelation');
+            this.maxDrawdownInput = document.getElementById('maxDrawdown');
+            this.saveRiskBtn = document.getElementById('saveRiskParameters');
 
-  saveStrategicGoals() {
-      const goals = {
-          monthlyGoal: document.getElementById('monthlyGoal').value,
-          annualGoal: document.getElementById('annualGoal').value,
-          sharpeRatio: document.getElementById('sharpeRatio').value
-      };
+            // Logging Elements
+            this.learningLogTextarea = document.getElementById('learningLog');
+            this.saveLearningBtn = document.getElementById('saveLearning');
 
-      chrome.storage.local.set(goals, () => {
-          this.showNotification('Strategic Goals Updated', 'Goals have been systematically logged.');
-      });
-  }
+            this.emotionLogTextarea = document.getElementById('emotionLog');
+            this.saveEmotionBtn = document.getElementById('saveEmotion');
+        },
 
-  evaluateStrategyCompliance() {
-      const strategyData = {
-          strategyAdherence: document.getElementById('strategyAdherence').value,
-          selectionCriteria: document.getElementById('selectionCriteria').value
-      };
+        bindEvents() {
+            this.saveGoalsBtn.addEventListener('click', () => this.saveGoals());
+            this.saveStrategyBtn.addEventListener('click', () => this.saveStrategy());
+            this.saveRiskBtn.addEventListener('click', () => this.saveRiskParameters());
+            this.saveLearningBtn.addEventListener('click', () => this.saveLearningLog());
+            this.saveEmotionBtn.addEventListener('click', () => this.saveEmotionLog());
+        },
 
-      // Calculate compliance score
-      const complianceScore = (
-          parseInt(strategyData.strategyAdherence) + 
-          parseInt(strategyData.selectionCriteria)
-      ) / 2;
+        loadSavedData() {
+            chrome.storage.local.get([
+                'monthlyGoal', 'annualGoal', 'sharpeRatio',
+                'strategyAdherence', 'selectionCriteria',
+                'riskPerTrade', 'portfolioCorrelation', 'maxDrawdown',
+                'learningLog', 'emotionLog'
+            ], (data) => {
+                this.populateFields(data);
+            });
+        },
 
-      strategyData.complianceScore = complianceScore;
+        populateFields(data) {
+            const fields = [
+                'monthlyGoal', 'annualGoal', 'sharpeRatio',
+                'strategyAdherence', 'selectionCriteria',
+                'riskPerTrade', 'portfolioCorrelation', 'maxDrawdown',
+                'learningLog', 'emotionLog'
+            ];
 
-      chrome.storage.local.set(strategyData, () => {
-          this.showNotification('Strategy Compliance Analysis', 
-              `Compliance Score: ${complianceScore}%\n${this.getComplianceRecommendation(complianceScore)}`);
-      });
-  }
+            fields.forEach(field => {
+                if (data[field] !== undefined) {
+                    const element = document.getElementById(field);
+                    if (element) element.value = data[field];
+                }
+            });
+        },
 
-  getComplianceRecommendation(score) {
-      if (score >= 90) return "Excellent strategy execution. Continue current approach.";
-      if (score >= 75) return "Good performance. Minor refinements recommended.";
-      if (score >= 50) return "Significant strategy deviation. Comprehensive review needed.";
-      return "Critical strategy misalignment. Immediate strategic reassessment required.";
-  }
+        saveGoals() {
+            const goals = {
+                monthlyGoal: this.goalInput.value,
+                annualGoal: this.annualGoalInput.value,
+                sharpeRatio: this.sharpeRatioInput.value
+            };
 
-  saveRiskParameters() {
-      const riskParams = {
-          riskPerTrade: document.getElementById('riskPerTrade').value,
-          portfolioCorrelation: document.getElementById('portfolioCorrelation').value,
-          maxDrawdown: document.getElementById('maxDrawdown').value
-      };
+            chrome.storage.local.set(goals, () => {
+                this.showNotification('Goals Saved', 'Strategic goals have been updated.');
+            });
+        },
 
-      chrome.storage.local.set(riskParams, () => {
-          this.showNotification('Risk Parameters Updated', 
-              'Advanced risk management parameters systematically logged.');
-      });
-  }
+        saveStrategy() {
+            const strategyData = {
+                strategyAdherence: this.strategyAdherenceSelect.value,
+                selectionCriteria: this.selectionCriteriaSelect.value
+            };
 
-  saveLearningInsights() {
-      const learningLog = document.getElementById('learningLog').value;
-      chrome.storage.local.set({ learningLog }, () => {
-          this.showNotification('Analytical Insights Recorded', 
-              'Your systematic trade analysis has been documented.');
-      });
-  }
+            chrome.storage.local.set(strategyData, () => {
+                this.showNotification('Strategy Tracked', 'Strategy compliance recorded.');
+            });
+        },
 
-  logEmotionalInsights() {
-      const emotionLog = document.getElementById('emotionLog').value;
-      chrome.storage.local.set({ emotionLog }, () => {
-          this.showNotification('Emotional Intelligence Log', 
-              'Cognitive insights and emotional state objectively recorded.');
-      });
-  }
+        saveRiskParameters() {
+            const riskData = {
+                riskPerTrade: this.riskPerTradeInput.value,
+                portfolioCorrelation: this.portfolioCorrelationInput.value,
+                maxDrawdown: this.maxDrawdownInput.value
+            };
 
-  showNotification(title, message) {
-      // Create a notification element
-      const notification = document.createElement('div');
-      notification.style.position = 'fixed';
-      notification.style.bottom = '20px';
-      notification.style.right = '20px';
-      notification.style.backgroundColor = '#1a5f7a';
-      notification.style.color = 'white';
-      notification.style.padding = '15px';
-      notification.style.borderRadius = '5px';
-      notification.style.zIndex = '1000';
-      
-      notification.innerHTML = `
-          <strong>${title}</strong><br>
-          ${message}
-      `;
+            chrome.storage.local.set(riskData, () => {
+                this.showNotification('Risk Parameters', 'Risk management settings updated.');
+            });
+        },
 
-      document.body.appendChild(notification);
+        saveLearningLog() {
+            const learningLog = this.learningLogTextarea.value;
+            chrome.storage.local.set({ learningLog }, () => {
+                this.showNotification('Learning Log', 'Insights have been recorded.');
+            });
+        },
 
-      // Remove notification after 3 seconds
-      setTimeout(() => {
-          document.body.removeChild(notification);
-      }, 3000);
-  }
-}
+        saveEmotionLog() {
+            const emotionLog = this.emotionLogTextarea.value;
+            chrome.storage.local.set({ emotionLog }, () => {
+                this.showNotification('Emotion Log', 'Emotional insights captured.');
+            });
+        },
 
-// Initialize the Trading Plan Manager when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new TradingPlanManager();
-});
+        showNotification(title, message) {
+            const notification = document.createElement('div');
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.right = '20px';
+            notification.style.backgroundColor = '#1a5f7a';
+            notification.style.color = 'white';
+            notification.style.padding = '15px';
+            notification.style.borderRadius = '5px';
+            notification.style.zIndex = '1000';
+            
+            notification.innerHTML = `
+                <strong>${title}</strong><br>
+                ${message}
+            `;
 
-// Background sync and periodic analysis (optional)
-chrome.alarms.create('dailyTradeReview', {
-  periodInMinutes: 1440  // 24 hours
-});
+            document.body.appendChild(notification);
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'dailyTradeReview') {
-      // Perform background analysis or send reminders
-      chrome.storage.local.get(null, (data) => {
-          console.log('Daily Trade Review Data:', data);
-          // Implement your daily review logic here
-      });
-  }
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+    };
+
+    tradingPlanManager.init();
 });
